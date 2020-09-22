@@ -123,8 +123,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 @Override
                 public void onRefresh() {
 
+
+                    Log.d(TAG, "Test01");
+                    Call<List<PostItem>> getCall = mMyAPI.get_posts();
+                    Log.d(TAG, "Test02");
+                    getCall.enqueue(new Callback<List<PostItem>>() {
+                        @Override
+                        public void onResponse(Call<List<PostItem>> call, Response<List<PostItem>> response) {
+                            if (response.isSuccessful()) {
+                                Log.d(TAG, "Test03");
+                                List<PostItem> mList = response.body();
+                                Log.d(TAG, "Test04");
+
+                                arrayList.clear();
+                                for (PostItem item : mList) {
+                                    Log.d(TAG, "Test05");
+                                    PeopleList peopleList = new PeopleList();
+                                    Log.d(TAG, "Test06");
+                                    peopleList.setName(item.getName());
+                                    Log.d(TAG, "Test07");
+                                    peopleList.setMajor(item.getMajor());
+                                    Log.d(TAG, "Test08");
+                                    peopleList.setPhone_num(item.getPhone_num());
+                                    Log.d(TAG, "Test09");
+                                    arrayList.add(peopleList);
+                                    Log.d(TAG, "Test10");
+
+                                    Log.d(TAG, "Fxxking");
+
+                                }
+                                customAdapter.notifyDataSetChanged();
+
+
+                            } else {
+                                Log.d(TAG, "Status Code : " + response.code());
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<List<PostItem>> call, Throwable t) {
+
+                        }
+                    });
+
                     customAdapter.notifyDataSetChanged();
-                    //swipeRefreshLayout.isRefreshing(true);
+                    swipeRefreshLayout.setRefreshing(false);
                 }
             });
 
