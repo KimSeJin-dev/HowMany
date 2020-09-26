@@ -10,9 +10,13 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebChromeClient;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.HorizontalScrollView;
@@ -36,7 +40,9 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+import static com.example.howmany.R.id.webView;
+
+public class MainActivity extends AppCompatActivity {
     /*-------------------------------------------------*/
     private final String TAG = getClass().getSimpleName();
     ArrayList<PeopleList> arrayList = new ArrayList<>();
@@ -55,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView textViewName, textViewAddress, textViewResult;
     //qr code scanner object
     private IntentIntegrator qrScan;
+    private WebView mWebView;
 
 
 
@@ -64,9 +71,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
 
+        buttonScan = (Button) findViewById(R.id.buttonScan);
+        qrScan = new IntentIntegrator(this);
+
+        buttonScan.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                qrScan.setPrompt("Scanning...");
+                qrScan.setOrientationLocked(false);
+                qrScan.initiateScan();
+            }
+        });
 
         mliveCount = findViewById(R.id.livecount);
-        mliveCount.setOnClickListener(this);
 
         initMyAPI(BASE_URL);
 
@@ -178,8 +195,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //recyclerView.setLayoutManager(new LinearLayoutManager(this)) ;
 
         //View Objects
-        buttonScan = (Button) findViewById(R.id.buttonScan);
-        buttonScan.setOnClickListener(this);
 
 
 
@@ -233,6 +248,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         lineView.setDataList(dataLists);
         */
 
+
+
+//        @Override
+//        public void onClick(View v) {
+//            if( v == buttonScan) { //qr코드 버튼 클릭시
+//                //scan option
+//                qrScan = new IntentIntegrator(this);
+//                qrScan.setPrompt("Scanning...");
+//                qrScan.setOrientationLocked(false);
+//                qrScan.initiateScan();
+//            }
+//
+//            else if( v == mliveCount){
+//
+//            }
+//        }
+
     }
 
 
@@ -253,69 +285,82 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     /*-------------------------------------------------*/
 
 
-    @Override
-    public void onClick(View v) {
-        if( v == buttonScan) { //qr코드 버튼 클릭시
-            //scan option
-            qrScan = new IntentIntegrator(this);
-            qrScan.setPrompt("Scanning...");
-            qrScan.setOrientationLocked(false);
-            qrScan.initiateScan();
-        }
 
-        else if( v == mliveCount){
-
-        }
-    }
 
     //Getting the scan results
 
     //qr코드 승인 , qr코드 없을시
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
+
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
         if (result != null) {
-
-           //qrcode 가 없으면
-           /*String address = "www.naver.com"; //obj.getString("address");// 주소 받아오기
-            Intent intent_1 = new Intent(MainActivity.this, pWebView.class);
-            intent_1.putExtra("webview_addr",address);
-            startActivity(intent_1);
-            */
+            //qrcode 가 없으면
             if (result.getContents() == null) {
-                Log.d(TAG,"테스트0");
-                String address = "http://emoclew.pythonanywhere.com/"; //obj.getString("address");// 주소 받아오기
-                Intent intent_1 = new Intent(MainActivity.this, pWebView.class);
-                intent_1.putExtra("webview_addr",address);
-                startActivity(intent_1);
-                Toast.makeText(MainActivity.this, "Cancelled", Toast.LENGTH_SHORT).show();
 
+                Log.d(TAG, "example_test_01");
+                Toast.makeText(MainActivity.this, "취소!", Toast.LENGTH_SHORT).show();
             } else {
+
+                Log.d(TAG, "example_test_02");
                 //qrcode 결과가 있으면
-                Log.d(TAG,"테스트1");
-                Toast.makeText(MainActivity.this, "Scan Perfect", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "스캔완료!", Toast.LENGTH_SHORT).show();
                 try {
                     //data를 json으로 변환
-                    Log.d(TAG,"테스트2");
-                    JSONObject obj = new JSONObject(result.getContents());
-                    textViewName.setText(obj.getString("name"));
-                    textViewAddress.setText(obj.getString("address"));
-                    String address_1 = "m.naver.com"; //obj.getString("address");// 주소 받아오기
-                    Intent intent = new Intent(MainActivity.this, pWebView.class);
-                    intent.putExtra("webview_addr",address_1);
 
-                    startActivity(intent);
+
+                    Log.d(TAG, "example_test_03");
+                    JSONObject obj = new JSONObject(result.getContents());
                 } catch (JSONException e) {
+
+                    Intent intent = getIntent();
+                    String myUrl = result.getContents();//intent.getStringExtra("webview_addr");     // 접속 URL (내장HTML의 경우 왼쪽과 같이 쓰고 아니면 걍 URL)
+
+                    setContentView(R.layout.hotcheck_view);
+                    // 웹뷰 셋팅
+                    mWebView = (WebView) findViewById(webView);//xml 자바코드 연결
+                    mWebView.getSettings().setJavaScriptEnabled(true);//자바스크립트 허용
+                    Log.d(myUrl,"테스트2");
+                    mWebView.loadUrl(myUrl);//웹뷰 실행
+                    Log.d(myUrl,"테스트3");
+                    mWebView.setWebChromeClient(new WebChromeClient());//웹뷰에 크롬 사용 허용//이 부분이 없으면 크롬에서 alert가 뜨지 않음
+                    mWebView.setWebViewClient(new WebViewClientClass());//새창열기 없이 웹뷰 내에서 다시 열기//페이지 이동 원활히 하기위해 사용
+
+
+
+
+
+
+                    Log.d(TAG, "example_test_04");
                     e.printStackTrace();
                     //Toast.makeText(MainActivity.this, result.getContents(), Toast.LENGTH_LONG).show();
-                    textViewResult.setText(result.getContents());
                 }
             }
-
         } else {
+            Log.d(TAG, "example_test_05");
             super.onActivityResult(requestCode, resultCode, data);
         }
     }
+
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {//뒤로가기 버튼 이벤트
+        if ((keyCode == KeyEvent.KEYCODE_BACK) && mWebView.canGoBack()) {//웹뷰에서 뒤로가기 버튼을 누르면 뒤로가짐
+            mWebView.goBack();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    private class WebViewClientClass extends WebViewClient {//페이지 이동
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            Log.d("check URL",url);
+            view.loadUrl(url);
+            return true;
+        }
+    }
+
 
 
     public class CustomAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> { // 리사이클러뷰
