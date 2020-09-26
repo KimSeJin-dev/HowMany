@@ -46,22 +46,17 @@ public class MainActivity extends AppCompatActivity {
     /*-------------------------------------------------*/
     private final String TAG = getClass().getSimpleName();
     ArrayList<PeopleList> arrayList = new ArrayList<>();
-    //server의 url을 적어준다.
+
     private final String BASE_URL = "http://emoclew.pythonanywhere.com";
     private MyAPI mMyAPI;
 
     private TextView mListTv;
-    // 웹서버 관련 코드
-    /*-------------------------------------------------*/
-
-
-    //view Objects
     private Button buttonScan;
     private Button mliveCount;
-    private TextView textViewName, textViewAddress, textViewResult;
-    //qr code scanner object
     private IntentIntegrator qrScan;
     private WebView mWebView;
+    private final long FINISH_INTERVAL_TIME = 2000;
+    private long lastTimeBackPressed = 0;
 
 
 
@@ -70,15 +65,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-        buttonScan = (Button) findViewById(R.id.buttonScan);
         qrScan = new IntentIntegrator(this);
 
+        buttonScan = (Button) findViewById(R.id.buttonScan);
         buttonScan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                qrScan.setPrompt("Scanning...");
                 qrScan.setOrientationLocked(false);
+                qrScan.setPrompt("QR코드를 정중앙에 위치시켜 스캔해주세요");
                 qrScan.initiateScan();
             }
         });
@@ -94,39 +88,28 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(customAdapter);
 
 
-            Log.d(TAG, "Test01");
-            Call<List<PostItem>> getCall = mMyAPI.get_posts();
-            Log.d(TAG, "Test02");
+
+        Call<List<PostItem>> getCall = mMyAPI.get_posts();
             getCall.enqueue(new Callback<List<PostItem>>() {
                 @Override
                 public void onResponse(Call<List<PostItem>> call, Response<List<PostItem>> response) {
                     if (response.isSuccessful()) {
-                        Log.d(TAG, "Test03");
                         List<PostItem> mList = response.body();
-                        Log.d(TAG, "Test04");
 
                         arrayList.clear();
                         for (PostItem item : mList) {
-                            Log.d(TAG, "Test05");
                             PeopleList peopleList = new PeopleList();
-                            Log.d(TAG, "Test06");
                             peopleList.setName(item.getName());
-                            Log.d(TAG, "Test07");
                             peopleList.setMajor(item.getMajor());
-                            Log.d(TAG, "Test08");
                             peopleList.setPhone_num(item.getPhone_num());
-                            Log.d(TAG, "Test09");
                             arrayList.add(peopleList);
-                            Log.d(TAG, "Test10");
-
-                            Log.d(TAG, "Fxxking");
 
                         }
                         customAdapter.notifyDataSetChanged();
 
 
                     } else {
-                        Log.d(TAG, "Status Code : " + response.code());
+                        Log.d(TAG, "Error Code");
                     }
                 }
 
@@ -141,39 +124,27 @@ public class MainActivity extends AppCompatActivity {
                 public void onRefresh() {
 
 
-                    Log.d(TAG, "Test01");
                     Call<List<PostItem>> getCall = mMyAPI.get_posts();
-                    Log.d(TAG, "Test02");
                     getCall.enqueue(new Callback<List<PostItem>>() {
                         @Override
                         public void onResponse(Call<List<PostItem>> call, Response<List<PostItem>> response) {
                             if (response.isSuccessful()) {
-                                Log.d(TAG, "Test03");
                                 List<PostItem> mList = response.body();
-                                Log.d(TAG, "Test04");
-
                                 arrayList.clear();
                                 for (PostItem item : mList) {
-                                    Log.d(TAG, "Test05");
                                     PeopleList peopleList = new PeopleList();
-                                    Log.d(TAG, "Test06");
                                     peopleList.setName(item.getName());
-                                    Log.d(TAG, "Test07");
                                     peopleList.setMajor(item.getMajor());
-                                    Log.d(TAG, "Test08");
                                     peopleList.setPhone_num(item.getPhone_num());
-                                    Log.d(TAG, "Test09");
                                     arrayList.add(peopleList);
-                                    Log.d(TAG, "Test10");
 
-                                    Log.d(TAG, "Fxxking");
 
                                 }
                                 customAdapter.notifyDataSetChanged();
 
 
                             } else {
-                                Log.d(TAG, "Status Code : " + response.code());
+                                Log.d(TAG, "Error Code : ");
                             }
                         }
 
@@ -189,86 +160,9 @@ public class MainActivity extends AppCompatActivity {
             });
 
 
-
-
-        //구분선
-        //recyclerView.setLayoutManager(new LinearLayoutManager(this)) ;
-
-        //View Objects
-
-
-
-
-
-        //intializing scan object
-
-        //button onClick
-
-        /*
-        lineView = (LineView) findViewById(R.id.line_view);
-
-        //list data
-        List<AirQualityData> data = db.todayAirQualityData();
-
-        //lable
-        ArrayList<String> hour = new ArrayList<String>();
-        //3 data sets
-
-        ArrayList<Integer> dataList_10 = new ArrayList<>();
-        ArrayList<Integer> dataList_2_5 = new ArrayList<>();
-        ArrayList<Integer> dataList_1_0 = new ArrayList<>();
-
-        //put db data into arrays
-        for(AirQualityData datum : data) {
-            hour.add(String.valueOf(datum.getHour()));
-            dataList_10.add(datum.getPm10());
-            dataList_2_5.add(datum.getPm2_5());
-            dataList_1_0.add(datum.getPm1_0());
-        }
-
-
-        // put data sets into datalist
-        ArrayList<ArrayList<Integer>> dataLists = new ArrayList<>();
-        dataLists.add(dataList_10);
-        dataLists.add(dataList_2_5);
-        dataLists.add(dataList_1_0);
-
-
-        //put data sets into datalist
-        ArrayList<ArrayList<Integer>> dataLists = new ArrayList<>();
-
-        //draw line graph
-        lineView.setDrawDotLine(true);
-        lineView.setShowPopup(LineView.ShOW_POPUPS_NONE);
-        lineView.setColorArray(new int[]{
-                Color.parseColor("e74c3c") , Color.parseColor("#2980b9"), Color.parseColor(("1abc9c"))
-        });
-
-        lineView.setBottomTextList(hour);
-        lineView.setDataList(dataLists);
-        */
-
-
-
-//        @Override
-//        public void onClick(View v) {
-//            if( v == buttonScan) { //qr코드 버튼 클릭시
-//                //scan option
-//                qrScan = new IntentIntegrator(this);
-//                qrScan.setPrompt("Scanning...");
-//                qrScan.setOrientationLocked(false);
-//                qrScan.initiateScan();
-//            }
-//
-//            else if( v == mliveCount){
-//
-//            }
-//        }
-
     }
 
 
-    /*-------------------------------------------------*/
     private void initMyAPI(String baseUrl){
 
         Log.d(TAG,"initMyAPI : " + baseUrl);
@@ -279,17 +173,7 @@ public class MainActivity extends AppCompatActivity {
 
         mMyAPI = retrofit.create(MyAPI.class);
     }
-    //Retrofit 객체를 생성하고 이 객체를 이용해서, API service를 create 해준다.
 
-
-    /*-------------------------------------------------*/
-
-
-
-
-    //Getting the scan results
-
-    //qr코드 승인 , qr코드 없을시
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
 
@@ -297,60 +181,71 @@ public class MainActivity extends AppCompatActivity {
         if (result != null) {
             //qrcode 가 없으면
             if (result.getContents() == null) {
-
-                Log.d(TAG, "example_test_01");
-                Toast.makeText(MainActivity.this, "취소!", Toast.LENGTH_SHORT).show();
+             Toast.makeText(MainActivity.this, "취소!", Toast.LENGTH_SHORT).show();
             } else {
 
-                Log.d(TAG, "example_test_02");
-                //qrcode 결과가 있으면
                 Toast.makeText(MainActivity.this, "스캔완료!", Toast.LENGTH_SHORT).show();
                 try {
-                    //data를 json으로 변환
-
-
-                    Log.d(TAG, "example_test_03");
                     JSONObject obj = new JSONObject(result.getContents());
                 } catch (JSONException e) {
-
-                    Intent intent = getIntent();
-                    String myUrl = result.getContents();//intent.getStringExtra("webview_addr");     // 접속 URL (내장HTML의 경우 왼쪽과 같이 쓰고 아니면 걍 URL)
+                   String myUrl = result.getContents();//intent.getStringExtra("webview_addr");     // 접속 URL (내장HTML의 경우 왼쪽과 같이 쓰고 아니면 걍 URL)
 
                     setContentView(R.layout.hotcheck_view);
                     // 웹뷰 셋팅
                     mWebView = (WebView) findViewById(webView);//xml 자바코드 연결
                     mWebView.getSettings().setJavaScriptEnabled(true);//자바스크립트 허용
-                    Log.d(myUrl,"테스트2");
                     mWebView.loadUrl(myUrl);//웹뷰 실행
-                    Log.d(myUrl,"테스트3");
                     mWebView.setWebChromeClient(new WebChromeClient());//웹뷰에 크롬 사용 허용//이 부분이 없으면 크롬에서 alert가 뜨지 않음
                     mWebView.setWebViewClient(new WebViewClientClass());//새창열기 없이 웹뷰 내에서 다시 열기//페이지 이동 원활히 하기위해 사용
-
-
-
-
-
-
-                    Log.d(TAG, "example_test_04");
                     e.printStackTrace();
                     //Toast.makeText(MainActivity.this, result.getContents(), Toast.LENGTH_LONG).show();
                 }
             }
         } else {
-            Log.d(TAG, "example_test_05");
             super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
 
+//    @Override
+//    public boolean onKeyDown(int keyCode, KeyEvent event) {//뒤로가기 버튼 이벤트
+//
+//        switch(keyCode)
+//            mWebView.canGoBack()
+//        if ((keyCode == KeyEvent.KEYCODE_BACK) && mWebView.canGoBack()) {//웹뷰에서 뒤로가기 버튼을 누르면 뒤로가짐
+//            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+//            startActivity(intent);
+//            //mWebView.goBack();
+//            return true;
+//        }
+//        return false;
+//    }
+
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {//뒤로가기 버튼 이벤트
-        if ((keyCode == KeyEvent.KEYCODE_BACK) && mWebView.canGoBack()) {//웹뷰에서 뒤로가기 버튼을 누르면 뒤로가짐
-            mWebView.goBack();
-            return true;
+    public void onBackPressed() {
+        if ((mWebView instanceof  WebView) && mWebView.canGoBack()) {
+            String Url = mWebView.getUrl();
+            if(mWebView.getUrl().equals(Url))
+            {
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                startActivity(intent);
+                super.onBackPressed();
+            }
+                mWebView.goBack();
+
         }
-        return super.onKeyDown(keyCode, event);
+        else if((mWebView instanceof  WebView) && mWebView.getUrl().equals("http://emoclew.pythonanywhere.com/")){
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
+
+            super.onBackPressed();
+        }
+        else {
+            System.exit(0);
+        }
     }
+
+
 
     private class WebViewClientClass extends WebViewClient {//페이지 이동
         @Override
@@ -360,6 +255,7 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
     }
+
 
 
 
